@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赖彦伦的个人主页</title>
+    <style>
+        :root {
+            --primary-color: #0070f3;
+            --card-bg: rgba(255, 255, 255, 0.82);
+            --text-main: #1d1d1f;
+            --text-sub: #6e6e73;
+            --accent-color: #f59e0b;
+            --xhs-red: #ff2442;
+            --mp-green: #07c160;
+            --success-green: #10b981;
+            --psy-blue: #3b82f6;
+        }
+
+        /* --- 16宫格照片背景墙 --- */
+        .photo-collage-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 0; 
+            filter: brightness(0.85);
+        }
+
+        .photo-collage-bg img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+
+        .overlay-mask {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(240, 244, 248, 0.3); 
+            backdrop-filter: blur(5px); 
+            -webkit-backdrop-filter: blur(25px);
+            z-index: -1;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, "Microsoft YaHei", sans-serif;
+            margin: 0; display: flex; justify-content: center; padding: 40px 20px; overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 24px;
+        }
+
+        .reveal {
+            opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.15, 0.45, 0.3, 1);
+        }
+
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .glass-card {
+            background: var(--card-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 28px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover { transform: translateY(-6px) scale(1.01); box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+
+        .profile-card { padding: 40px; text-align: center; }
+        .profile-img {
+            width: 90px; height: 90px; border-radius: 50%; border: 4px solid white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 15px;
+        }
+
+        h1 { margin: 0; font-size: 30px; letter-spacing: -1px; }
+        .tag { color: var(--primary-color); font-weight: 600; margin: 8px 0; display: block; }
+        .personality { font-size: 14px; color: #555; margin-bottom: 8px; }
+        .motto-container { width: 100%; display: flex; justify-content: center; align-items: center; margin: 12px 0; }
+        
+        .motto {
+            font-size: 18px; font-weight: 800;
+            background: linear-gradient(90deg, #ff0080, #7928ca, #0070f3, #ff0080);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shine 4s linear infinite; display: inline-block;
+        }
+
+        @keyframes shine { to { background-position: 200% center; } }
+
+        .emoji-shake {
+            display: inline-block; margin-left: 5px; animation: shake 2.5s infinite ease-in-out; -webkit-text-fill-color: initial;
+        }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(15deg) scale(1.2); } }
+
+        .main-content {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: stretch;
+        }
+
+        @media (max-width: 950px) { .main-content { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 650px) { .main-content { grid-template-columns: 1fr; } }
+
+        .section-card { padding: 24px; box-sizing: border-box; display: flex; flex-direction: column; }
+        h3 { font-size: 16px; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px; }
+
+        /* 内容板块样式 */
+        .content-item {
+            background: rgba(240, 244, 248, 0.4); border-radius: 18px; padding: 15px; margin-bottom: 12px; border: 1px solid transparent;
+        }
+
+        /* 下载按钮布局 */
+        .book-box { 
+            background: linear-gradient(135deg, rgba(255,252,245,0.7) 0%, rgba(255,255,255,0.7) 100%); 
+            border: 1px solid #ffeeba;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .book-text { flex: 1; }
+
+        .exp-box { background: linear-gradient(135deg, rgba(240,255,244,0.7) 0%, rgba(255,255,255,0.7) 100%); border: 1px solid #d1fae5; }
+        .psy-box { background: linear-gradient(135deg, rgba(239,246,255,0.7) 0%, rgba(255,255,255,0.7) 100%); border: 1px solid #bfdbfe; }
+
+        .download-btn {
+            background: var(--accent-color); color: white; padding: 8px 14px; border-radius: 10px;
+            text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block;
+            white-space: nowrap; 
+            transition: opacity 0.2s;
+        }
+        .download-btn:hover { opacity: 0.9; }
+
+        /* 内容输出栏优化 */
+        .media-card {
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: space-between;
+            background: rgba(240, 244, 248, 0.5); 
+            border-radius: 20px; 
+            padding: 16px; 
+            margin-bottom: 15px; 
+            gap: 10px;
+        }
+        .media-info { 
+            flex: 1; 
+            text-align: center; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+        }
+        .media-tag { 
+            font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 800; margin-bottom: 6px; display: inline-block; 
+        }
+        .mp-tag { background: #e6f7ed; color: var(--mp-green); }
+        .xhs-tag { background: #fff1f2; color: var(--xhs-red); }
+        
+        .media-name {
+            font-weight: 800; font-size: 16px; color: var(--text-main); margin-bottom: 4px; display: block;
+        }
+        .media-desc {
+            font-size: 10px; color: var(--text-sub); line-height: 1.4; display: block;
+        }
+        .media-qr { width: 85px; height: 85px; border-radius: 8px; background: #fff; padding: 4px; border: 1px solid #eee; flex-shrink: 0; }
+
+        .contact-pill {
+            display: flex; align-items: center; justify-content: center; background: rgba(240, 244, 248, 0.6); border-radius: 12px;
+            padding: 10px 15px; margin-bottom: 12px;
+        }
+        .contact-pill b { color: var(--text-sub); font-size: 11px; margin-right: 8px; }
+        .contact-pill span { color: var(--primary-color); font-size: 13px; font-weight: 600; }
+
+        .wechat-section {
+            padding-top: 20px; border-top: 1px dashed rgba(0,0,0,0.1); text-align: center;
+        }
+        .wechat-qr-big { width: 130px; height: 130px; margin: 15px auto; display: block; border-radius: 12px; }
+
+        .hobby-item { 
+            background: rgba(0,112,243,0.1); color: var(--primary-color); padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="photo-collage-bg">
+        <img src="images/pic1.jpg"><img src="images/pic2.jpg"><img src="images/pic3.jpg"><img src="images/pic4.jpg">
+        <img src="images/pic5.jpg"><img src="images/pic6.jpg"><img src="images/pic7.jpg"><img src="images/pic8.jpg">
+        <img src="images/pic9.jpg"><img src="images/pic10.jpg"><img src="images/pic11.jpg"><img src="images/pic12.jpg">
+        <img src="images/pic13.jpg"><img src="images/pic14.jpg"><img src="images/pic15.jpg"><img src="images/pic16.jpg">
+    </div>
+
+    <div class="overlay-mask"></div>
+
+    <div class="container">
+        <header class="glass-card profile-card reveal">
+            <img src="images/avatar.jpg" alt="赖彦伦" class="profile-img">
+            <h1>赖彦伦</h1>
+            <span class="tag">华中科技大学 · 网络空间安全 · 大一</span>
+            <div class="personality">✨ 一颗自由浪漫的灵魂 · 开朗健谈，喜欢交友</div>
+            <div class="motto-container">
+                <div class="motto">“风吹哪页读哪页，哪页不会撕哪页！” <span class="emoji-shake">o(*≧▽≦)ツ</span></div>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 8px; margin-top: 15px;">
+                <span class="hobby-item">🚴 骑行</span><span class="hobby-item">💪 健身</span><span class="hobby-item">📖 阅读</span><span class="hobby-item">✍️ 写作</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="glass-card section-card reveal">
+                <h3>🚀 作品与实践</h3>
+                <div class="content-item book-box">
+                    <div class="book-text">
+                        <span style="font-weight: bold; font-size: 14px; color: #b45309;">📖 《指点迷津》</span>
+                        <span style="font-size: 11px; color: #888; display: block; margin-top: 4px;">从课内学习到竞赛到大学生活的全方位指南</span>
+                    </div>
+                    <a href="files/guide.pdf" class="download-btn" download>下载 PDF</a>
+                </div>
+                <div class="content-item psy-box">
+                    <span style="font-weight: bold; font-size: 14px; color: var(--psy-blue);">💙 心理辅导实践</span>
+                    <span style="font-size: 11px; color: #666; display: block; margin-top: 4px;">累计时长100h+，涵盖人际交往、认知、学业及生涯规划辅导等方面</span>
+                </div>
+                <div class="content-item exp-box">
+                    <span style="font-weight: bold; font-size: 14px; color: var(--success-green);">💼 社会实践</span>
+                    <span style="font-size: 11px; color: #888; display: block; margin-top: 4px;">高考后牵头教培创业业绩 20w+</span>
+                </div>
+            </section>
+
+            <section class="glass-card section-card reveal">
+                <h3>✍️ 内容输出 (日更)</h3>
+                <div class="media-card">
+                    <div class="media-info">
+                        <span class="media-tag mp-tag">微信公众号</span>
+                        <span class="media-name">且行且思且成长.</span>
+                        <span class="media-desc">个人成长与人文思考的轨迹</span>
+                    </div>
+                    <img src="images/mp-qr.png" alt="公众号" class="media-qr">
+                </div>
+                <div class="media-card" style="margin-bottom: 0;">
+                    <div class="media-info">
+                        <span class="media-tag xhs-tag">小红书</span>
+                        <span class="media-name">Lon.</span>
+                        <span class="media-desc">每日更新自己所热爱的生活</span>
+                    </div>
+                    <img src="images/xhs-qr.png" alt="小红书" class="media-qr">
+                </div>
+            </section>
+
+            <section class="glass-card section-card reveal">
+                <h3>📱 联系方式</h3>
+                <div class="contact-pill"><b>QQ</b> <span>1211973782</span></div>
+                <div class="contact-pill"><b>Email</b> <span>1211973782@qq.com</span></div>
+                <div class="wechat-section">
+                    <span style="font-size: 11px; color: var(--mp-green); font-weight: 700;">微信个人号</span>
+                    <img src="images/wechat-qr.png" alt="微信" class="wechat-qr-big">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => { entry.target.classList.add('active'); }, index * 100); 
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
